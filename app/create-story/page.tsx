@@ -95,7 +95,7 @@ const CreateStoryPage = () => {
             // console.log(imageResult.data);
 
             // save in db
-            const resp = await saveInDB(storyGenerated, imageResult.data.data);
+            const resp = await saveInDB(storyGenerated, imageResult);
             console.log(resp);
             toast.success('Story generated successfully');
             await updateUserCredits();
