@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Nunito } from 'next/font/google';
 import './globals.css';
 import Provider from '@/components/providers/nextui-provider';
+import ProviderClerk from '@/components/providers/clerk-provider';
+import Header from '@/components/header';
 
 // const geistSans = localFont({
 //     src: './fonts/GeistVF.woff',
@@ -29,10 +31,15 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={`${NunitoFont.className} antialiased`}>
-                <Provider>{children}</Provider>
-            </body>
-        </html>
+        <ProviderClerk>
+            <html lang="en">
+                <body className={`${NunitoFont.className} antialiased`}>
+                    <Provider>
+                        <Header />
+                        {children}
+                    </Provider>
+                </body>
+            </html>
+        </ProviderClerk>
     );
 }

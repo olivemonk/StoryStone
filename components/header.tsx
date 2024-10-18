@@ -1,5 +1,6 @@
 'use client';
 
+import { UserButton, useUser } from '@clerk/nextjs';
 import { Button } from '@nextui-org/button';
 import {
     Navbar,
@@ -16,6 +17,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 const Header = () => {
+    const { isSignedIn } = useUser();
+
     const MenuList = [
         {
             name: 'Home',
@@ -38,7 +41,11 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
-        <Navbar maxWidth="2xl" onMenuOpenChange={setIsMenuOpen} className='items-start flex'>
+        <Navbar
+            maxWidth="2xl"
+            onMenuOpenChange={setIsMenuOpen}
+            className="items-start flex"
+        >
             <NavbarContent className="text-primary font-bold" justify="start">
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? 'Close Menu' : 'Open Menu'}
@@ -62,9 +69,17 @@ const Header = () => {
                 ))}
             </NavbarContent>
             <NavbarContent justify="end">
-                <Button size='sm' className='sm:hidden' color="primary">Get Started</Button>
-                <Button className='hidden sm:flex' color="primary">Get Started</Button>
-
+                <Link href={'/dashboard'}>
+                    <Button size="sm" className="sm:hidden" color="primary">
+                        {isSignedIn ? 'Dashboard' : 'Get Started'}
+                    </Button>
+                </Link>
+                <Link href={'/dashboard'}>
+                    <Button className="hidden sm:flex" color="primary">
+                        {isSignedIn ? 'Dashboard' : 'Get Started'}
+                    </Button>
+                </Link>
+                <UserButton />
             </NavbarContent>
             <NavbarMenu className="text-primary text-lg font-semibold">
                 {MenuList.map((item, index) => (

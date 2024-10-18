@@ -1,5 +1,6 @@
 import { Button } from '@nextui-org/button';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 const Hero = () => {
@@ -15,9 +16,11 @@ const Hero = () => {
                         In sint eius exercitationem accusantium enim! Dolorum
                         debitis porro facilis placeat magnam.
                     </p>
-                    <Button size="lg" className="mt-5" color="primary">
-                        Create Story
-                    </Button>
+                    <Link href={'/create-story'}>
+                        <Button size="lg" className="mt-5" color="primary">
+                            Create Story
+                        </Button>
+                    </Link>
                 </div>
                 <div>
                     <Image
