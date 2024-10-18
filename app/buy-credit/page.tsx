@@ -7,7 +7,7 @@ import { PayPalButtons } from '@paypal/react-paypal-js';
 import { eq } from 'drizzle-orm';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import {toast} from 'sonner'
 
 const BuyCreditPage = () => {
     const Options = useMemo(
@@ -86,11 +86,11 @@ const BuyCreditPage = () => {
                             key={option.id}
                             onClick={() => setSelectedOption(option.id)} // Correctly updating the selected option
                         >
-                            <h2 className="font-2xl">
+                            <h2 className="text-xl">
                                 Get {option.credits} Credits = {option.credits}{' '}
                                 Story
                             </h2>
-                            <h2>${option.price}</h2>
+                            <h2 className='font-bold text-2xl mt-1'>${option.price}</h2>
                         </div>
                     ))}
                 </div>
@@ -105,6 +105,8 @@ const BuyCreditPage = () => {
                             }}
                             onCancel={() => {
                                 toast.error('Payment Cancelled');
+                                setSelectedOption(0);
+                                setSelectedPrice(0);
                             }}
                             createOrder={(data, actions) => {
                                 // @ts-expect-error - The value is not used

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useContext } from 'react';
 import StorySubjectInput from './_components/story-subject-input';
 import StoryType from './_components/story-type';
 import AgeGroup from './_components/age-group';
@@ -8,10 +8,15 @@ import ImageType from './_components/image-type';
 import { Button } from '@nextui-org/button';
 import { chatSession } from '@/config/gemini';
 import { db } from '@/config/db';
-import { storyData } from '@/config/schema';
+import { storyData, users } from '@/config/schema';
+import { toast } from 'sonner';
 import uuid4 from 'uuid4';
 import axios from 'axios';
 import CustomLoader from './_components/custom-loader';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { UserDetailsContext } from '@/components/context/user-details-context';
+import { eq } from 'drizzle-orm';
 
 export interface FieldData {
     fieldName: 'string';
@@ -36,10 +41,19 @@ const CreateStoryPage = () => {
             [data.fieldName]: data.fieldValue,
         }));
     };
+    const router = useRouter();
+    const { user } = useUser();
+    const { userDetails } = useContext(UserDetailsContext);
 
     const generateStory = async () => {
         if (!PROMPT || !formData) {
-            throw new Error('Prompt or form data is missing');
+            toast.error('Enter the prompt and select all fields');
+            return;
+        }
+
+        if(userDetails.credits <= 0) {
+            toast.error('You do not have enough credits');
+            return;
         }
         setLoading(true);
         // generate prompt
@@ -68,18 +82,21 @@ const CreateStoryPage = () => {
 
             const imageResult = await axios.post('/api/save-image', {
                 base64Image: image.data.data,
-            })
+            });
 
-            console.log(imageResult.data);
-
+            // console.log(imageResult.data);
 
             // save in db
             const resp = await saveInDB(storyGenerated, imageResult.data.data);
             console.log(resp);
+            toast.success('Story generated successfully');
+            await updateUserCredits();
+            router.replace(`/view-story/${resp[0]?.storyId}`);
             setLoading(false);
         } catch (error) {
             console.log(error);
             setLoading(false);
+            toast.error('Error generating story');
         }
 
         // generate story cover image
@@ -106,7 +123,10 @@ const CreateStoryPage = () => {
                     storySubject: formData?.storySubject ?? '',
                     storyType: formData?.storyType ?? '',
                     output: parsedOutput,
-                    coverImage
+                    coverImage,
+                    userEmail: user?.primaryEmailAddress?.emailAddress,
+                    userName: user?.fullName,
+                    userImage: user?.imageUrl,
                 })
                 .returning({ storyId: storyData.storyId });
             setLoading(false);
@@ -115,6 +135,21 @@ const CreateStoryPage = () => {
             console.log(error);
             setLoading(false);
         }
+    };
+
+    const updateUserCredits = async () => {
+        const result = await db
+            .update(users)
+            .set({
+                credits: Number(userDetails?.credits - 1),
+            })
+            .where(
+                eq(
+                    users.userEmail,
+                    user?.primaryEmailAddress?.emailAddress ?? ''
+                )
+            )
+            .returning({ id: users.id });
     };
 
     return (
@@ -134,7 +169,7 @@ const CreateStoryPage = () => {
                 <AgeGroup userSelection={onHandleUserSelection} />
                 <ImageType userSelection={onHandleUserSelection} />
             </div>
-            <div className="flex justify-end py-10">
+            <div className="flex flex-col items-end py-10">
                 <Button
                     color="primary"
                     className=" py-2 px-4 text-lg"
@@ -143,6 +178,9 @@ const CreateStoryPage = () => {
                 >
                     Generate story
                 </Button>
+                <span className="text-tiny mt-1 mr-5 text-black">
+                    1 credit will be used.
+                </span>
             </div>
             <CustomLoader loading={loading} />
         </div>

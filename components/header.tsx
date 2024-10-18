@@ -30,7 +30,7 @@ const Header = () => {
         },
         {
             name: 'Explore stories',
-            path: '/explore-stories',
+            path: '/explore',
         },
         {
             name: 'Contact us',

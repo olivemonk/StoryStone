@@ -4,6 +4,7 @@ import './globals.css';
 import Provider from '@/components/providers/nextui-provider';
 import ProviderClerk from '@/components/providers/clerk-provider';
 import Header from '@/components/header';
+import { Toaster } from 'sonner';
 
 // const geistSans = localFont({
 //     src: './fonts/GeistVF.woff',
@@ -37,6 +38,7 @@ export default function RootLayout({
                     <Provider>
                         <Header />
                         {children}
+                        <Toaster/>
                     </Provider>
                 </body>
             </html>
