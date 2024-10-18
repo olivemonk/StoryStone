@@ -9,21 +9,24 @@ export async function POST(req: NextRequest) {
 
         const cleanedBase64Image = base64Image.replace(/^data:image\/\w+;base64,/, '');
 
+        // Generate unique filename
         const fileName = `/ai-story/${Date.now()}.png`;
         const imageRef = ref(storage, fileName);
 
-        await uploadString(imageRef, cleanedBase64Image, 'base64').then(() => {
-            console.log('Uploaded image with name: ', fileName);
-        });
+        // Upload image to Firebase (base64)
+        await uploadString(imageRef, cleanedBase64Image, 'base64');
 
+        // Set metadata for the image
         const metadata = {
             contentType: 'image/png',
-            contentDisposition: 'inline', 
+            contentDisposition: 'inline',
         };
         await updateMetadata(imageRef, metadata);
 
+        // Get download URL of uploaded image
         const downloadURL = await getDownloadURL(imageRef);
 
+        // Return the download URL to the client
         return NextResponse.json({ data: downloadURL });
 
     } catch (error) {
