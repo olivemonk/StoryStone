@@ -17,6 +17,13 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { UserDetailsContext } from '@/components/context/user-details-context';
 import { eq } from 'drizzle-orm';
+import { storage } from '@/config/firebase-config';
+import {
+    getDownloadURL,
+    ref,
+    updateMetadata,
+    uploadString,
+} from 'firebase/storage';
 
 export interface FieldData {
     fieldName: 'string';
@@ -51,7 +58,7 @@ const CreateStoryPage = () => {
             return;
         }
 
-        if(userDetails.credits <= 0) {
+        if (userDetails.credits <= 0) {
             toast.error('You do not have enough credits');
             return;
         }
@@ -80,9 +87,10 @@ const CreateStoryPage = () => {
 
             console.log(image.data);
 
-            const imageResult = await axios.post('/api/save-image', {
-                base64Image: image.data.data,
-            });
+            // const imageResult = await axios.post('/api/save-image', {
+            //     base64Image: image.data.data,
+            // });
+            const imageResult = await uploadImage(image.data.data);
 
             // console.log(imageResult.data);
 
@@ -100,6 +108,29 @@ const CreateStoryPage = () => {
         }
 
         // generate story cover image
+    };
+
+    const uploadImage = async (base64Image: string) => {
+        const cleanedBase64Image = base64Image.replace(
+            /^data:image\/\w+;base64,/,
+            ''
+        );
+        const fileName = `/ai-story/${Date.now()}.png`;
+        const imageRef = ref(storage, fileName);
+
+        // Upload the base64 image directly to Firebase Storage
+        await uploadString(imageRef, cleanedBase64Image, 'base64');
+
+        const metadata = {
+            contentType: 'image/png',
+            contentDisposition: 'inline',
+        };
+        await updateMetadata(imageRef, metadata);
+
+        // Get download URL of uploaded image
+        const downloadURL = await getDownloadURL(imageRef);
+
+        return downloadURL;
     };
 
     const saveInDB = async (output: string, coverImage: string) => {
